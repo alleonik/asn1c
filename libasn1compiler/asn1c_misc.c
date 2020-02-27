@@ -175,6 +175,7 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 	asn1p_expr_t *terminal = 0;
 	int stdname = 0;
 	const char *typename;
+	char buf[32];
 
 	/* Rewind to the topmost parent expression */
 	if((top_parent = expr->parent_expr))
@@ -297,6 +298,12 @@ asn1c_type_name(arg_t *arg, asn1p_expr_t *expr, enum tnfmt _format) {
 				_format = TNF_CTYPE;
 			stdname = 1;
 			typename = ASN_EXPR_TYPE2STR(expr->expr_type);
+            if(_format == TNF_INCLUDE
+               && (expr->expr_type == ASN_CONSTR_SEQUENCE_OF
+                   || expr->expr_type == ASN_CONSTR_CHOICE)){
+                snprintf(buf, 32, expr->expr_type == ASN_CONSTR_SEQUENCE_OF ? "asn %s" : "constr %s", typename);
+                typename = buf;
+            }
 		} else {
 			_format = TNF_RSAFE;
 			typename = expr->Identifier;

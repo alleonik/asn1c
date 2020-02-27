@@ -2659,6 +2659,10 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
     REDIR(OT_CODE);
     OUT("static asn_type_selector_result_t\n");
     OUT("select_%s_", c_name(arg).compound_name);
+    OUT("%s_type(const asn_TYPE_descriptor_t *parent_type, const void *parent_sptr);\n", MKID(expr));
+    REDIR(OT_IOC_CODE);
+    OUT("static asn_type_selector_result_t\n");
+    OUT("select_%s_", c_name(arg).compound_name);
     OUT("%s_type(const asn_TYPE_descriptor_t *parent_type, const void *parent_sptr) {\n", MKID(expr));
     INDENT(+1);
 
@@ -2883,7 +2887,7 @@ emit_member_table(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_objset_t *
 	if(expr->_anonymous_type && !strcmp(expr->Identifier, "Member")) {
 		OUT("\"\"\n");
 	} else {
-		OUT("\"%s\"\n", expr->Identifier);
+		OUT("\"%s\"\n", asn1c_make_identifier(AMI_NODELIMITER | AMI_MASK_ONLY_SPACES, 0, expr->Identifier, 0));
 	}
 	OUT("},\n");
 	INDENT(-1);
@@ -2958,8 +2962,8 @@ emit_type_DEF(arg_t *arg, asn1p_expr_t *expr, enum tvm_compat tv_mode, int tags_
 				p ? asn1c_make_identifier(AMI_CHECK_RESERVED,
 					0, p, 0) : "");
 		} else {
-			OUT("\"%s\",\n", expr->Identifier);
-			OUT("\"%s\",\n", expr->Identifier);
+			OUT("\"%s\",\n", asn1c_make_identifier(AMI_NODELIMITER | AMI_MASK_ONLY_SPACES, 0, expr->Identifier, 0));
+			OUT("\"%s\",\n", asn1c_make_identifier(AMI_NODELIMITER | AMI_MASK_ONLY_SPACES, 0, expr->Identifier, 0));
 		}
 
 		if(expr->expr_type & ASN_CONSTR_MASK) {

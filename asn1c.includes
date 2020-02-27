@@ -1,0 +1,8 @@
+.
+asn1c
+libasn1parser
+libasn1compiler
+libasn1fix
+libasn1print
+libasn1common
+skeletons

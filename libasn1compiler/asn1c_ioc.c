@@ -141,6 +141,10 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
         case ASN_BASIC_RELATIVE_OID:
             prim_type = "RELATIVE_OID_t";
             break;
+        case ASN_STRING_ObjectDescriptor:
+            prim_type = "char*";
+            primitive_representation = 1;
+            break;
         default: {
             char *p = strdup(MKID(cell->value));
             FATAL("Unsupported type %s for value %s",
@@ -187,6 +191,11 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
                       MKID(cell->value));
                 return -1;
             }
+        case ATV_STRING:
+            /* Buffer is guaranteed to be null-terminated */
+            assert(expr_value->value->value.string.buf[expr_value->value->value.string.size] == '\0');
+            OUT("\"%s\"", expr_value->value->value.string.buf);
+            break;
         case ATV_UNPARSED:
             OUT("\"not supported\", 0 };\n");
             FATAL("Inappropriate value %s for type %s",
@@ -219,12 +228,29 @@ emit_ioc_cell(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
         OUT("aioc__value, ");
         OUT("&asn_DEF_%s, ", asn1c_type_name(arg, cell->value, TNF_SAFE));
-        OUT("&asn_VAL_%d_%s", cell->value->_type_unique_index,
+        OUT("&asn_VAL_%d_%s, {}", cell->value->_type_unique_index,
             MKID(cell->value));
 
-    } else if(cell->value->meta_type == AMT_TYPEREF) {
+    } else if(cell->value->meta_type == AMT_TYPEREF
+              || cell->value->meta_type == AMT_TYPE) {
+        asn1p_expr_t *expr = cell->value;
+        int complex_contents =
+            (expr->expr_type & ASN_CONSTR_MASK)
+            || expr->expr_type == ASN_BASIC_ENUMERATED
+            || (expr->expr_type == ASN_BASIC_INTEGER
+                && asn1c_type_fits_long(arg, expr) == FL_FITS_UNSIGN);
+
         GEN_INCLUDE(asn1c_type_name(arg, cell->value, TNF_INCLUDE));
-        OUT("aioc__type, &asn_DEF_%s", MKID(cell->value));
+
+        OUT("aioc__type, &asn_DEF_");
+        if(complex_contents) {
+            OUT("%s", MKID(expr));
+            if(!(arg->flags & A1C_ALL_DEFS_GLOBAL))
+                OUT("_%d", expr->_type_unique_index);
+        } else {
+            OUT("%s", asn1c_type_name(arg, expr, TNF_SAFE));
+        }
+        OUT(", 0, {}");
     } else {
         return -1;
     }
@@ -282,7 +308,7 @@ emit_ioc_table(arg_t *arg, asn1p_expr_t *context, asn1c_ioc_table_and_objset_t i
     OUT("static const asn_ioc_set_t asn_IOS_%s_%d[] = {\n",
         MKID(ioc_tao.objset), ioc_tao.objset->_type_unique_index);
     INDENT(+1);
-    OUT("%zu, %zu, asn_IOS_%s_%d_rows\n", ioc_tao.ioct->rows, columns,
+    OUT("{ %zu, %zu, asn_IOS_%s_%d_rows }\n", ioc_tao.ioct->rows, columns,
         MKID(ioc_tao.objset), ioc_tao.objset->_type_unique_index);
     INDENT(-1);
     OUT("};\n");
