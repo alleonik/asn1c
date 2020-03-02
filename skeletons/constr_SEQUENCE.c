@@ -285,7 +285,8 @@ SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 				edx = n;
 				ctx->step = 1 + 2 * edx;	/* Remember! */
 				goto microphase2;
-			} else if(elements[n].flags & ATF_ANY_TYPE) {
+			} else if((elements[n].flags & ATF_ANY_TYPE)
+                      || (elements[n].flags & ATF_OPEN_TYPE)) {
 				/*
 				 * This is the ANY type, which may bear
 				 * any flag whatsoever.

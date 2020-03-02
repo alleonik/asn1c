@@ -142,8 +142,7 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
             prim_type = "RELATIVE_OID_t";
             break;
         case ASN_STRING_ObjectDescriptor:
-            prim_type = "char*";
-            primitive_representation = 1;
+            prim_type = "ObjectDescriptor_t";
             break;
         default: {
             char *p = strdup(MKID(cell->value));
@@ -194,7 +193,7 @@ emit_ioc_value(arg_t *arg, struct asn1p_ioc_cell_s *cell) {
         case ATV_STRING:
             /* Buffer is guaranteed to be null-terminated */
             assert(expr_value->value->value.string.buf[expr_value->value->value.string.size] == '\0');
-            OUT("\"%s\"", expr_value->value->value.string.buf);
+            OUT("(uint8_t*)\"%s\", %d, {}", expr_value->value->value.string.buf, expr_value->value->value.string.size);
             break;
         case ATV_UNPARSED:
             OUT("\"not supported\", 0 };\n");
