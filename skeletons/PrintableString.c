@@ -69,7 +69,7 @@ asn_TYPE_operation_t asn_OP_PrintableString = {
 	OCTET_STRING_decode_uper,
 	OCTET_STRING_encode_uper,
 #endif	/* ASN_DISABLE_PER_SUPPORT */
-	OCTET_STRING_random_fill,
+	PrintableString_random_fill,
 	0	/* Use generic outmost tag fetcher */
 };
 asn_TYPE_descriptor_t asn_DEF_PrintableString = {
@@ -87,6 +87,59 @@ asn_TYPE_descriptor_t asn_DEF_PrintableString = {
 	0	/* No specifics */
 };
 
+asn_random_fill_result_t
+PrintableString_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
+                            const asn_encoding_constraints_t *constraints,
+                            size_t max_length) {
+	const asn_OCTET_STRING_specifics_t *specs = &asn_SPC_OCTET_STRING_specs;
+    asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
+    asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
+    asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
+    uint8_t *buf;
+    uint8_t *bend;
+    uint8_t *b;
+    size_t rnd_len;
+    OCTET_STRING_t *st;
+
+    if(max_length == 0 && !*sptr) return result_skipped;
+
+    if(!constraints || !constraints->per_constraints)
+        constraints = &td->encoding_constraints;
+
+    rnd_len =
+        OCTET_STRING_random_length_constrained(td, constraints, max_length);
+
+    buf = CALLOC(1, rnd_len + 1);
+    if(!buf) return result_failed;
+
+    bend = &buf[rnd_len];
+
+    for(b = buf; b < bend; b++) {
+        uint8_t c;
+        do {
+            c = (uint8_t)asn_random_between(0, 255);
+        } while (!_PrintableString_alphabet[c]);
+        *(uint8_t *)b = c;
+    }
+    *(uint8_t *)b = 0;
+
+    if(*sptr) {
+        st = *sptr;
+        FREEMEM(st->buf);
+    } else {
+        st = (OCTET_STRING_t *)(*sptr = CALLOC(1, specs->struct_size));
+        if(!st) {
+            FREEMEM(buf);
+            return result_failed;
+        }
+    }
+
+    st->buf = buf;
+    st->size = rnd_len;
+
+    result_ok.length = st->size;
+    return result_ok;
+}
 
 int
 PrintableString_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,

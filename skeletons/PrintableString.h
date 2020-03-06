@@ -17,6 +17,7 @@ extern asn_TYPE_descriptor_t asn_DEF_PrintableString;
 extern asn_TYPE_operation_t asn_OP_PrintableString;
 
 asn_constr_check_f PrintableString_constraint;
+asn_random_fill_f  PrintableString_random_fill;
 
 #define PrintableString_free            OCTET_STRING_free
 #define PrintableString_print           OCTET_STRING_print_utf8
