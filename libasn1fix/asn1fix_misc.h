@@ -4,6 +4,8 @@
 #ifndef	ASN1FIX_MISC_H
 #define	ASN1FIX_MISC_H
 
+int asn1f_fix_constructed(arg_t *arg);	/* For SEQUENCE/SET/CHOICE */
+
 /*
  * Recursively invoke a given function over the given expr and all its
  * children.

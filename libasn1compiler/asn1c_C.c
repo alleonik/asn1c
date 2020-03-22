@@ -2702,6 +2702,7 @@ emit_member_type_selector(arg_t *arg, asn1p_expr_t *expr, asn1c_ioc_table_and_ob
     }
     OUT("\n");
 
+    OUT("(void)parent_type;\n");
     OUT("for(row=0; row < itable->rows_count; row++) {\n");
     OUT("    const asn_ioc_cell_t *constraining_cell = &itable->rows[row * itable->columns_count + constraining_column];\n");
     OUT("    const asn_ioc_cell_t *type_cell = &itable->rows[row * itable->columns_count + for_column];\n");

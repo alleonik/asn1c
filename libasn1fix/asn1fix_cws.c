@@ -198,7 +198,16 @@ _asn1f_foreach_unparsed(arg_t *arg, const asn1p_constraint_t *ct,
     case ACT_CA_CSV:    /* , */
         break;
     case ACT_EL_VALUE:
-        return 0;
+        if(ct->value->type == ATV_UNPARSED) {
+            if(process
+               && process(ct->value->value.string.buf + 1,
+                          ct->value->value.string.size - 2, keyp)
+                      != 0) {
+                return -1;
+            }
+            return 0;
+        }
+        return -1;
     }
 
     for(size_t i = 0; i < ct->el_count; i++) {
@@ -499,6 +508,8 @@ _asn1f_assign_cell_value(arg_t *arg, struct asn1p_ioc_cell_s *cell,
 			return -1;
 		}
 	}
+	arg_t tmparg = *arg; tmparg.expr = expr;
+	asn1f_recurse_expr(&tmparg, asn1f_fix_constructed);
 
 	DEBUG("Field %s assignment of %s got %s",
 		cell->field->Identifier, mivr, expr->Identifier);

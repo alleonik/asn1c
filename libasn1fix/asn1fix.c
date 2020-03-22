@@ -10,7 +10,6 @@ static void _default_error_logger(int _severity, const char *fmt, ...);
 static int asn1f_fix_module__phase_1(arg_t *arg);
 static int asn1f_fix_module__phase_2(arg_t *arg);
 static int asn1f_fix_simple(arg_t *arg);	/* For INTEGER/ENUMERATED */
-static int asn1f_fix_constructed(arg_t *arg);	/* For SEQUENCE/SET/CHOICE */
 static int asn1f_resolve_constraints(arg_t *arg); /* For subtype constraints */
 static int asn1f_check_constraints(arg_t *arg);	/* For subtype constraints */
 static int asn1f_check_duplicate(arg_t *arg);
@@ -383,7 +382,7 @@ asn1f_fix_simple(arg_t *arg) {
 	return rvalue;
 }
 
-static int
+int
 asn1f_fix_constructed(arg_t *arg) {
 	int rvalue = 0;
 	int ret;
